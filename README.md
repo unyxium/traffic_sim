@@ -1,2 +1,4 @@
 # traffic_sim
-A vehicular traffic simulation and analysis tool for Grasshopper.
+*A vehicular traffic simulation and analysis tool for Grasshopper.*
+
+A Python-based toolkit for Grasshopper to perform microscopic multi-agent vehicle simulation through a set of Grasshopper components. It generates and outputs data for analysis and visualisation including recorded vehicle positions, road congestion highlighting, and routes. The road network consists of inputted curve geometry and attributes such as lane configurations, intersections, and vehicle trips. Vehicles are able to navigate to and from points of interests assigned by the user and perform their own pathfinding, collision avoidance, and following of intersection signalling.
