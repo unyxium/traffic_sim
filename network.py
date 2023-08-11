@@ -6,7 +6,6 @@ from utils import *
 import random
 import math
 
-
 sort_by_bearing = lambda dictionary: dictionary['bearing']
 debug_geometry = []
 
@@ -473,7 +472,7 @@ class RoadNetwork:
 
     def add_spawner(self, road_index, lane_indices=[0], t=0.1, spacing=10, spawns_remaining=1000, target=None):
         """Add a new spawner marker. Target given, None for random."""
-
+        
         if not isinstance(lane_indices, list):
             lane_indices = [lane_indices]
         
@@ -491,9 +490,9 @@ class RoadNetwork:
             # pathfinding needs to be per lane
             m.route = []
             for lane_index in lane_indices:
+                #print(lane_index)
                 m.route.append(self.create_vehicle_route((road_index, lane_index), target))
         
-
         self.markers.append(m)
         
         
@@ -509,8 +508,9 @@ class RoadNetwork:
             v.route = self.create_vehicle_route((road_index, lane_index), target=None, depth_limit=3)
             
         else:
+            #print('pathfind', route)
             v.behaviour = 'pathfind'
-            v.route = v.route
+            v.route = route
             
         v.initialise_data(self.roads[v.road_index])
             
@@ -817,8 +817,8 @@ class RoadNetwork:
             # Rules:
             # small roads get stop signs, two of them will get priority (longest curve)
             # if a
-            if random.random() < 0.3:
-                node.ins_type = 'stop'
+            #if random.random() < 0.3:
+            #    node.ins_type = 'stop'
             
         pass
 
@@ -843,13 +843,15 @@ class RoadNetwork:
 
                     # spawn a vehicle with correct params:
                     # TODO random
+                    #print(m.route[0])
+                    chosen_route = random.randint(0, len(m.route)-1)
                     
-                    self.add_vehicle(m.road_index, m.lane_indices[0], m.t, route=m.route[0])
+                    self.add_vehicle(m.road_index, m.lane_indices[0], m.t, route=list(m.route[chosen_route])) # there can be multiple routes to choose from
 
 
     def create_vehicle_route(self, location, target=None, depth_limit=None):
         """Return a list of road and lane indices as a route starting from given location. If no target is provided, choose randomly."""
-
+        #print(location, target, depth_limit)
         if target is None or target == (None, None): # no target, go somewhere random
             
             route = [] 
@@ -914,13 +916,13 @@ class RoadNetwork:
             if depth_limit == None:
                 depth_limit = PATHFIND_DEPTH_LIMIT
 
-            for _ in range(depth_limit):
-                print('pos:', road_index, lane_index)
-                print('route:', lane_pool[road_index][lane_index]['route'])
+            for depth_count in range(depth_limit):
+                #print('pos:', road_index, lane_index)
+                #print('route:', lane_pool[road_index][lane_index]['route'])
                 # find all the roads it can lead to, calculate their distances:
                 for accessible_lanes in self.nodes[lane_pool[road_index][lane_index]['node_end']].get_lane_mapping(road_index, lane_index):
                     r_i, l_i = accessible_lanes['road_index'], accessible_lanes['lane_index'] # temp vars
-                    print('check branch:', (r_i, l_i))
+                    #print('check branch:', (r_i, l_i))
                     if r_i == target[0]: # target road found
                         if target[1] is None or l_i == target[1]:
                             print('found destination...')
@@ -930,7 +932,7 @@ class RoadNetwork:
                             return route
                     
                     if not lane_pool[r_i][l_i]['visited']: # not visited, now update distance
-                        print('not visited')
+                        #print('not visited')
                         new_dist = lane_pool[road_index][lane_index]['dist_to_start'] + lane_pool[r_i][l_i]['length']
                         
                         if new_dist < lane_pool[r_i][l_i]['dist_to_start']:
@@ -954,7 +956,9 @@ class RoadNetwork:
                             smallest_loc = (lane['road_index'], lane['lane_index'])
 
                 if smallest_loc is None:
-                    raise Exception('No smallest distance found')
+                    print(f'No smallest distance found. depth: {depth_count}, R{road_index}, L{lane_index}')
+                    #print(lane_pool)
+                    raise Exception('No smallest distance found.')
 
                 road_index, lane_index = smallest_loc
 
@@ -968,14 +972,13 @@ class RoadNetwork:
             # check if position should make it change path
             if v.path_following == 'road':
                 if (v.path_dir and v.t > v.path_t_end) or (not v.path_dir and v.t < v.path_t_end):
-                    
-                    if v.route == []:
-                        # generate basic, it was just spawned as random probably
-                        #print()
-                        v.route = self.create_vehicle_route((v.road_index, v.lane_index), depth_limit=5-len(v.route))
-                    else:
-                        for segment in self.create_vehicle_route(v.route[-1], depth_limit=5-len(v.route)):
-                            v.route.append(segment)
+                    if v.behaviour == 'random': 
+                        if v.route == []:
+                            # generate basic, it was just spawned as random probably
+                                v.route = self.create_vehicle_route((v.road_index, v.lane_index), depth_limit=5-len(v.route))
+                        else:
+                                for segment in self.create_vehicle_route(v.route[-1], depth_limit=5-len(v.route)):
+                                    v.route.append(segment)
                     
                     if v.route == []: # nowhere to go
                         v.delete_flag = True
@@ -1042,13 +1045,11 @@ class RoadNetwork:
         
         speed_limit = self.roads[road_index].lanes[lane_index].speed
 
+        tgts = []
         
         # get mid speeds, should scale depending on length
-        tgts = []
-
-        #tgts.append((start_dist+0.5*length, speed_limit))
         tgts.append(('limit', start_dist+0.1*length, speed_limit))
-        if length > 40:
+        if length > 40: # extra spds for long roads
             tgts.append(('limit', start_dist+0.3*length, speed_limit))
             tgts.append(('limit', start_dist+0.7*length, speed_limit))
         tgts.append(('limit', start_dist+0.9*length, speed_limit))
@@ -1061,10 +1062,9 @@ class RoadNetwork:
 
         node: Node = self.nodes[switch(road.lanes[lane_index].fwd, road.n2, road.n1)]
         if node.ins_type == 'stop':
-            tgts.append(('stop', start_dist+length, 0)) # TODO TESTING stop at intersection
+            # TODO check if any vehicle is in the way, otherwise continue through the intersection
+            tgts.append(('stop', start_dist+length, 0))
 
-            #if road_index == 85:
-            #    print(start_dist, length)
 
         return tgts
 
@@ -1084,7 +1084,7 @@ class RoadNetwork:
                     tgts.append(('vehicle', start_dist+other_vehicle.distance_along_path, other_vehicle.speed*0.8))
 
         if prev_road_index is None:
-            return tgts
+            return tgts, None # TODO ####
 
         crv = node.mapping_curves[(prev_road_index, prev_lane_index, road_index, lane_index)]
         #crv: QuadraticBezier
@@ -1097,7 +1097,7 @@ class RoadNetwork:
 
     def update_vehicles(self, dt):
         """Update all vehicles."""
-
+        print('tick', len(self.vehicles))
         # Generate a cache to more efficiently search the road network vehicles. 
         # Keys indicate road index, values are vehicle objects on those roads.
         self.vehicle_map = {}
@@ -1116,7 +1116,7 @@ class RoadNetwork:
 
         # MAIN MOVEMENT
         for v in self.vehicles:
-            
+            #print(v.t, v.prev_road_index, v.prev_lane_index, v.road_index, v.lane_index)
             dist_to_start = 0-v.distance_along_path#-FWD_STOP_BUFFER
             #print(dist_to_start)
             v.tgt_speed_graph = []
@@ -1138,7 +1138,8 @@ class RoadNetwork:
             # next node
             prev_road_index = v.road_index
             prev_lane_index = v.lane_index
-
+            #print(prev_road_index, prev_lane_index)
+            #print(v.route)
             for road_index, lane_index in v.route:
                 node_spd_tgts = self._get_spd_tgts_node(road_index, lane_index, dist_to_start, prev_road_index, prev_lane_index)
                 for tgt in node_spd_tgts[0]:
