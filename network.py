@@ -12,8 +12,8 @@ debug_geometry = []
 
 CRV_EVAL_BUFFER = 0 # just in case the ends are degenerate, set >0
 PATHFIND_DEPTH_LIMIT = 10000 # pathfinding only
-VEHICLE_MIN_SPACING = 5 # metres between vehicles minimum
-FWD_STOP_BUFFER = 1
+VEHICLE_MIN_SPACING = 7 # metres between vehicles minimum
+FWD_STOP_BUFFER = 4
 TOL = 0.001 # bezier tolerance
 ROUTE_TGT_DIST_LIMIT = 150 # how far can targets be searched from the start of the road
 
@@ -168,7 +168,7 @@ class RoadSegment:
         self.n1 = int(n1)  # index into nodes list
         self.n2 = int(n2)
         self.curve = curve # stores the curve the segment represents, can be anything. \
-        #in grasshopper this could be actual curve geometry or an index to it \
+        # in grasshopper this could be actual curve geometry or an index to it \
         # in python this could be another class for a curve representation, e.g. bezier
 
         self.road_name = road_name # extra
@@ -1163,10 +1163,8 @@ class RoadNetwork:
             #v.tgt_speed_graph.append((v.path_length-v.distance_along_path, 0))
             ################
             #print(v.tgt_speed_graph)
-            #print('\n\n')
             v.tgt_speed_graph.sort(key=lambda x: x[1])
             #print(v.tgt_speed_graph)
-            #raise Exception('stop')
             #print('__')
             decay_fac = 0.1 # 0.01 = 100m
             tgt_accel = 0
@@ -1234,9 +1232,6 @@ class RoadNetwork:
             if v.speed < 0.01: # snap to 0 to prevent approach to infinity
                 v.speed = 0
 
-            # ARTIFICIAL THRESHOLD: no vehicle should get closer than MIN_SPACING. lerp w/ buffer of 2
-            #v.speed *= remap(v.fwd_dist, (VEHICLE_MIN_SPACING, VEHICLE_MIN_SPACING+2), clamp=True)
-            
             # Update speed and pos in the right direction:
             v.t_speed = v.speed / v.path_length
             v.t += dt*switch(v.path_dir, v.t_speed, -v.t_speed)
@@ -1367,6 +1362,7 @@ class RoadNetwork:
             fillets.append(node_fillets)
         
         return fillets
+
 ##############################
 
 def set_seed(seed=None):

@@ -92,11 +92,9 @@ def draw_curve(curve, colour='#ff00ff', offset=0, width=1, t_start=0, t_end=1):
                 t_new2 = curve.eval(t_end)
                 pygame.draw.line(screen, colour, ct(offset_pt(t_new1[0], t_new1[1], offset)), ct(offset_pt(t_new2[0], t_new2[1], offset)), width=width)
             
-            #draw_vec(d1[0], d1[1], 10)
-        #draw_vec(d1[0], d1[1], 10)
         #pygame.draw.line(screen, colour, ct(curve.n1), ct(curve.cp))
         #pygame.draw.line(screen, colour, ct(curve.cp), ct(curve.n2))
-        #pygame.draw.circle(screen, colour, ct(curve.cp), 5)
+        
     
     elif isinstance(curve, PolyLine):
         pts = []
@@ -131,14 +129,11 @@ def camera(movement_speed=1000):
         cam_x += (movement_speed * dt)  / cam_scale
 
     if keys[pygame.K_e]:
-        #print(cam_scale, dt)
-        #cam_scale += 2 * dt
         cam_scale *= 1+1*dt
         if cam_scale > 16:
             cam_scale = 16
+
     if keys[pygame.K_q]:
-        #print(cam_scale, dt)
-        #cam_scale -= 2 * dt
         cam_scale /= 1+1*dt
         if cam_scale < 1/16:
             cam_scale = 1/16
@@ -210,15 +205,15 @@ if LOAD == 1:
     network.add_road(0, 5)
 
 if LOAD == 2:
-    with open('C:/Users/Atlas/Documents/. Research project/synthesised1.json') as f:
+    with open('synthesised1.json') as f:
         network = N.load_packed_network(json.loads(f.read()))
 
 if LOAD == 3:
-    with open('C:/Users/Atlas/Documents/. Research project/testing.json') as f:
+    with open('testing.json') as f:
         network = N.load_packed_network(json.loads(f.read()))
 
 if LOAD == 4:
-    with open('C:/Users/Atlas/Documents/. Research project/five_dock.json') as f:
+    with open('five_dock.json') as f:
         network = N.load_packed_network(json.loads(f.read()))
 
 if LOAD == 5:
@@ -252,7 +247,6 @@ print(len(network.vehicles), 'spawned')
 
 #######################################################################
 # PYGAME
-#N.set_seed()
 
 if START_GAME:
     pygame.init()
@@ -350,8 +344,7 @@ while running:
                 
         if event.type == pygame.KEYUP and event.key == pygame.K_z:
             print(hovered_content)
-        #if event.type == pygame.KEYUP and event.key == pygame.MOUSEBUTTONDOWN:
-        #    print('asdad')
+
 
     # SIMULATION
 
@@ -427,7 +420,6 @@ while running:
             for l, lane in enumerate(road.lanes):
                 if lane.type == 'carriageway':
                     colour = '#353535'
-                    #colour = '#eeeeee'
                 else:
                     colour = '#808080'
                 offset = road.get_x_offset(l)
@@ -511,14 +503,9 @@ while running:
                 if on_screen(v.pos):
                     vec_col = '#ff00ff'
                     
-                    #if v.fwd_dist < 4:
-                    #    vec_col = '#ff0000'
-                    
                     if v.path_following == 'node':
                         vec_col = '#ffff00'
-                    #else:
-                    #    if v.speed < network.roads[v.road_index].lanes[v.lane_index].speed:
-                    #        vec_col = '#00ff00'
+                    
                     vec_size = v.acceleration * 5
 
                     draw_vec(v.pos, v.dir, vec_size, vec_col)
@@ -541,14 +528,11 @@ while running:
         pos = offset_pt(path_eval[0], path_eval[1], 0)
         
         draw_dot(pos, 8)
-    
-    #draw_curve(network.roads[347].curve, '#ffffff', width=5)
+
 
     # INTERACTABLE ELEMENTS
     if RENDER_LAYERS['hovered_content']:
-        #if pygame.mouse.get_pressed():
-            
-        #    print(pygame.mouse.get_pressed())
+        
         if hovered_content[0] is None:
             last_log = None # hover over nothing should reset
         else:
@@ -565,7 +549,7 @@ while running:
 
             elif hovered_content[0] == 'connection':
                 pass
-            # render branches?
+            
 
 
     # UPDATE SCREEN

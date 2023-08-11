@@ -5,7 +5,6 @@ import ghhops_server as hs
 import json
 import network as N
 import math
-#import rhino3dm
 import time
 
 app = Flask(__name__)
@@ -13,7 +12,7 @@ hops = hs.Hops(app)
 
 
 CATEGORY = 'Extra'
-DEFAULT_ICON = 'icons/graph.png'
+DEFAULT_ICON = 'icon_graph.png'
 
 
 @hops.component(
@@ -25,11 +24,11 @@ DEFAULT_ICON = 'icons/graph.png'
     inputs=[],
     outputs=[
         hs.HopsString('Details', 'D', 'Details'),
-        hs.HopsString('Components', 'C', 'List of components available')
+        hs.HopsString('Components', 'C', 'List of components available (use these in the address)')
     ]
 )
 def component_info():
-    # returns info about the hops server
+    """Returns info about the hops server."""
     return 'Created by Martin Ibbett, 2023', ['trim', 'simulation', 'pathfind', 'fillets', 'add_random_traffic', 'add_vehicles', 'add_markers', 'mapping_curves']
 
 
@@ -37,7 +36,7 @@ def component_info():
 @hops.component(
     '/trim',
     name='Trim',
-    description='Trim a road network.',
+    description='Trim a road network (shorten the road edges where they meet at intersections so there is no overlap).',
     category=CATEGORY,
     icon=DEFAULT_ICON,
     inputs=[
