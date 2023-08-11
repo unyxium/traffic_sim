@@ -1,3 +1,7 @@
+# Rhino/GH files
+*.3dmbak
+*.rhl
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
