@@ -235,13 +235,14 @@ if LOAD == 6:
     network.add_road(0,1)
     network.add_vehicle(0,1,0.5, speed=12)
 
-N.set_seed(0)
-network.generate_connection_cache()
+N.set_seed(0) # seed for PRNG
+
+network.generate_connection_cache() # which roads connect where?
 network.trim_roads(15, CORNER_RADIUS)
-network.generate_lane_mapping()
-network.generate_mapping_curves()
+network.generate_lane_mapping() # automatic lanes
+network.generate_mapping_curves() # curves for vehicles to follow
+network.add_random_traffic(VEHICLES) # add random vehicles
 network.generate_signalling()
-network.add_random_traffic(VEHICLES)
 
 print(len(network.vehicles), 'spawned')
 

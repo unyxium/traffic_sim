@@ -802,16 +802,24 @@ class RoadNetwork:
             self.properties.append('signalling')
 
         for node in self.nodes:
-            if node.connections == 2:
+            if len(node.connections) <= 2:
                 continue # no intersection at all
             
-            # rank each road by significance, take the best two
-
+            # rank each road by significance (sum of lane speeds)
             road_significance = []
-            #for connection in node.connections:
-
+            for connection in node.connections:
+                significance = 0
+                for lane in self.roads[connection['road_index']].lanes:
+                    significance += lane.speed
+                road_significance.append(significance)
+            
+            # pick the best two roads for highest priority
             
 
+            #node.ins_type = 'stop'
+            #node.ins_lane_priorities
+            #node.get_intersection_priority() # this uses lane priority
+            
             #if node.connections == 3:
                 # find best two road
             # Rules:
@@ -845,8 +853,11 @@ class RoadNetwork:
                     # TODO random
                     #print(m.route[0])
                     chosen_route = random.randint(0, len(m.route)-1)
-                    
-                    self.add_vehicle(m.road_index, m.lane_indices[0], m.t, route=list(m.route[chosen_route])) # there can be multiple routes to choose from
+                    chosen_lane = random.choice(m.lane_indices)
+                    if m.route[chosen_route] is None:
+                        self.add_vehicle(m.road_index, chosen_lane, m.t)
+                    else:
+                        self.add_vehicle(m.road_index, chosen_lane, m.t, route=list(m.route[chosen_route])) # there can be multiple routes to choose from
 
 
     def create_vehicle_route(self, location, target=None, depth_limit=None):
@@ -1087,9 +1098,26 @@ class RoadNetwork:
             return tgts, None # TODO ####
 
         crv = node.mapping_curves[(prev_road_index, prev_lane_index, road_index, lane_index)]
-        #crv: QuadraticBezier
-        #crv.curvature(0.5)
-        tgts.append(('limit', start_dist+crv.length()/2, kph(10))) # turn max curvature
+        crv: QuadraticBezier
+        turn_speed = None
+        
+        turn_radius = 1/max(0.01, crv.curvature(0.5))
+        
+        if turn_radius < 2:
+            turn_speed = kph(3)
+        elif turn_radius < 4:
+            turn_speed = kph(5)
+        elif turn_radius < 8:
+            turn_speed = kph(10)
+        elif turn_radius < 12:
+            turn_speed = kph(15)
+        elif turn_radius < 18:
+            turn_speed = kph(20)
+        elif turn_radius < 24:
+            turn_speed = kph(30)
+
+        if turn_speed is not None:
+            tgts.append(('limit', start_dist+crv.length()/2, turn_speed)) # turn max curvature
         
         return tgts, crv
 
@@ -1097,7 +1125,7 @@ class RoadNetwork:
 
     def update_vehicles(self, dt):
         """Update all vehicles."""
-        print('tick', len(self.vehicles))
+        #print('tick', len(self.vehicles))
         # Generate a cache to more efficiently search the road network vehicles. 
         # Keys indicate road index, values are vehicle objects on those roads.
         self.vehicle_map = {}
