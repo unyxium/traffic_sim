@@ -124,13 +124,13 @@ def component_random_traffic(json_network, count, seed=0):
     icon=DEFAULT_ICON,
     inputs=[
         hs.HopsString('Network', 'Network', 'JSON network'),
-        hs.HopsString('Vehicles', 'Vehicles', 'JSON vehicle data as a list', access=hs.HopsParamAccess.LIST),
+        hs.HopsString('Vehicles', 'Vehicles', 'JSON vehicle data as a list', access=hs.HopsParamAccess.LIST, optional=True),
     ],
     outputs=[
         hs.HopsString('Network', 'Network', 'JSON network'),
     ]
 )
-def component_add_vehicles(json_network, vehicles):
+def component_add_vehicles(json_network, vehicles=''):
     # Note that there is no generation of lane mapping yet
     network = N.load_packed_network(json.loads(json_network))
     
@@ -140,16 +140,16 @@ def component_add_vehicles(json_network, vehicles):
     if 'lane_mapping' not in json_network['info']['properties']:
         network.generate_lane_mapping()
     
-    #TODO
     for vehicle in vehicles:
-        vehicle: dict
-        network.add_vehicle(
-            vehicle['road_index'], 
-            vehicle.get('lane_index', 0), 
-            vehicle.get('t', 0), 
-            vehicle.get('route', None),
-            vehicle.get('speed', None),
-        ) 
+        if not vehicle == '':
+            vehicle: dict
+            network.add_vehicle(
+                vehicle['road_index'], 
+                vehicle.get('lane_index', 0), 
+                vehicle.get('t', 0), 
+                vehicle.get('route', None),
+                vehicle.get('speed', None),
+            ) 
 
     return network.data()
 
@@ -163,13 +163,13 @@ def component_add_vehicles(json_network, vehicles):
     icon=DEFAULT_ICON,
     inputs=[
         hs.HopsString('Network', 'Network', 'JSON network'),
-        hs.HopsString('Markers', 'Markers', 'JSON markers data as a list', access=hs.HopsParamAccess.LIST),
+        hs.HopsString('Markers', 'Markers', 'JSON markers data as a list', access=hs.HopsParamAccess.LIST, optional=True),
     ],
     outputs=[
         hs.HopsString('Network', 'Network', 'JSON network'),
     ]
 )
-def component_add_markers(json_network, markers):
+def component_add_markers(json_network, markers=''):
     json_network = json.loads(json_network)
     network = N.load_packed_network(json_network)
     
@@ -178,22 +178,27 @@ def component_add_markers(json_network, markers):
 
     if 'lane_mapping' not in json_network['info']['properties']:
         network.generate_lane_mapping()
-
+    
+    print('>>>>>>>>>')
+    print(markers)
+    
     for marker in markers:
-        marker: dict = json.loads(marker)
-        
-        if marker['road_index'] >= len(network.roads):
-            raise Exception('Marker road index out of range')
+        if not marker == '':
+            
+            marker: dict = json.loads(marker)
+            
+            if marker['road_index'] >= len(network.roads):
+                raise Exception('Marker road index out of range')
 
-        if marker['type'] == 'spawner_pathfind' or marker['type'] == 'spawner_pathfind' or marker['type'] == 'spawner':
-            network.add_spawner(
-                marker['road_index'], 
-                marker.get('lane_indices', [0]),
-                marker.get('t', 0),
-                marker.get('spacing', 10),
-                marker.get('spawns_remaining', 100),
-                marker.get('target', None),
-                )
+            if marker['type'] == 'spawner_pathfind' or marker['type'] == 'spawner_pathfind' or marker['type'] == 'spawner':
+                network.add_spawner(
+                    marker['road_index'], 
+                    marker.get('lane_indices', [0]),
+                    marker.get('t', 0),
+                    marker.get('spacing', 10),
+                    marker.get('spawns_remaining', 100),
+                    marker.get('target', None),
+                    )
 
     return network.data()
 
