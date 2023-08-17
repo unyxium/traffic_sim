@@ -3,13 +3,14 @@ from utils import *
 
 
 def offset_pt_2D(o, tangent, x, y):
-    """Offset a point in 2D"""
+    """Offset a point in 2D."""
     pt = (o[0] + x*tangent[1] + y*tangent[0], o[1] - x*tangent[0] + y*tangent[1])
     return pt
 
 
-
 def dist_pt_to_line_segment(pt, l1, l2):
+    """Find the distance from a point to a line segment."""
+
     length = math.dist(l1, l2)
     if length == 0: # degenerate line segment = point
         return math.dist(pt, l1)

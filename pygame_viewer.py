@@ -205,15 +205,15 @@ if LOAD == 1:
     network.add_road(0, 5)
 
 if LOAD == 2:
-    with open('synthesised1.json') as f:
+    with open('data/synthesised1.json') as f:
         network = N.load_packed_network(json.loads(f.read()))
 
 if LOAD == 3:
-    with open('testing.json') as f:
+    with open('data/testing.json') as f:
         network = N.load_packed_network(json.loads(f.read()))
 
 if LOAD == 4:
-    with open('five_dock.json') as f:
+    with open('data/five_dock.json') as f:
         network = N.load_packed_network(json.loads(f.read()))
 
 if LOAD == 5:

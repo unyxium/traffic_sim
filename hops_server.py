@@ -179,9 +179,6 @@ def component_add_markers(json_network, markers=''):
     if 'lane_mapping' not in json_network['info']['properties']:
         network.generate_lane_mapping()
     
-    print('>>>>>>>>>')
-    print(markers)
-    
     for marker in markers:
         if not marker == '':
             
@@ -287,7 +284,7 @@ def component_simulation(json_network, params, seed=0):
         network.trim_roads()
 
     network.generate_mapping_curves() # does not get cached
-    network.generate_signalling() # not functional yet
+    network.generate_signalling()
 
     print(network) # info
 
